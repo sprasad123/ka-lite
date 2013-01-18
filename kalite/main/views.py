@@ -151,7 +151,7 @@ def homepage(request):
     return context
         
 @require_admin
-@render_to("video_download.html")
+@render_to("update.html")
 def update(request):
     call_command("videoscan")
     force_job("videodownload", "Download Videos")
