@@ -50,6 +50,7 @@
     display: block;
     height: 130px;
     margin: -5px -14px -15px -14px;
+    padding-bottom: 88px;
 }
 
 .suggested-action-title {
@@ -69,15 +70,16 @@
 }
 
 .topic-list {
-    padding: 5px 0 0 0;
+    padding: 5px 0 -15px 0;
     font-size: 24px;
     font-family: "MuseoSans500", sans-serif;
 }
 
 .topic-list a {
     display: block;
-    padding: 0 0 8px 40px;
-    font-size: 18px;
+    padding: 0 0 0 40px;
+    font-size: 16px;
+    line-height: 22px;
 }
 
 a:hover, a:hover .suggested-action-title {
@@ -99,8 +101,8 @@ a:hover, a:hover .suggested-action-title {
     <div class="vertical-shadow suggested-action">
         <h2 class="suggested-action-title">{% trans "Learn by watching videos!" %}</h2>
         <p class="topic-list">
-            {% for topic in topics %}
-            <a href="{{ topic.slug }}">{{ topic.title }}</a>
+            {% for topic in topics.0.children.0.children %}
+                <a href="{{ topic.path }}">{{ topic.title }}</a>
             {% endfor %}
         </p>
     </div>
