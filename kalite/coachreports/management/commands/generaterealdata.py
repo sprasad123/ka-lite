@@ -146,32 +146,36 @@ def generate_fake_facility_users(nusers=20, facilities=None, facility_groups=Non
     for facility in facilities:
         for facility_group in facility_groups:
             for i in range(0, users_per_group):
-                user_data = {
-                    "first_name": random.choice(firstnames),
-                    "last_name":  random.choice(lastnames),
-                }
-                user_data["username"] = username_from_name(user_data["first_name"], user_data["last_name"])
+                print i
+                while True: # check is random name is a duplicate, and try again 
+                    user_data = {
+                        "first_name": random.choice(firstnames),
+                        "last_name":  random.choice(lastnames),
+                    }
+                    user_data["username"] = username_from_name(user_data["first_name"], user_data["last_name"])
 
-                try:
-                    facility_user = FacilityUser.objects.get(facility=facility, username=user_data["username"])
-                    facility_user.group = facility_group
-                    facility_user.save()
-                    logging.info("Retrieved facility user '%s/%s'" % (facility.name, user_data["username"]))
-                except FacilityUser.DoesNotExist as e:
-                    notes = json.dumps(sample_user_settings())
+                    try:
+                        facility_user = FacilityUser.objects.get(facility=facility, username=user_data["username"])
+                        facility_user.group = facility_group
+                        facility_user.save()
+                        logging.info("Retrieved facility user '%s/%s'" % (facility.name, user_data["username"]))
+                    except FacilityUser.DoesNotExist as e:
+                        break # we can move on
+                    
+                notes = json.dumps(sample_user_settings())
 
-                    facility_user = FacilityUser(
-                        facility=facility,
-                        username=user_data["username"],
-                        first_name=user_data["first_name"],
-                        last_name=user_data["last_name"],
-                        notes=notes,
-                        group=facility_group,
-                    )
-                    facility_user.set_password(password)  # set same password for every user
-                    facility_user.full_clean()
-                    facility_user.save()
-                    logging.info("Created facility user '%s/%s'" % (facility.name, user_data["username"]))
+                facility_user = FacilityUser(
+                    facility=facility,
+                    username=user_data["username"],
+                    first_name=user_data["first_name"],
+                    last_name=user_data["last_name"],
+                    notes=notes,
+                    group=facility_group,
+                )
+                facility_user.set_password(password)  # set same password for every user
+                facility_user.full_clean()
+                facility_user.save()
+                logging.info("Created facility user '%s/%s'" % (facility.name, user_data["username"]))
 
                 facility_users.append(facility_user)
 

@@ -63,12 +63,32 @@ class Validate_models(benchmark_base.Common):
         management.call_command('validate', verbosity=1)
         
 
-class Generate_facility_users(benchmark_base.Common):
+class Generate_real_data(benchmark_base.Common):
+    """
+    generaterealdata command is both i/o and moderately cpu intensive
+
+    Note: if more excercises or videos are added, this benchmark will
+    take longer!
+
+    expected record counts:
+    FacilityUser = 20
+    ExcerciseLog = 1185
+    VideoLog = 2082
+    UserLog = 0
     
+    E5500 = {'comment': None, 'head': 'e578087 benchmark: initial commit', 'individual_elapsed': {1: 1183.6675910949707}, 'iterations': 1, 'fixture': None, 'average_elapsed': 1183.6675910949707, 'uname': ('Linux', 'xubuntu', '3.2.0-35-generic', '#55-Ubuntu SMP Wed Dec 5 17:42:16 UTC 2012', 'x86_64', 'x86_64'), 'branch': 'benchmark_v2', 'class': 'Generate_real_data'}
+
+    """
     def _setup(self):
         self.max_iterations = 1
-
+        management.call_command('clean_pyc')
+        management.call_command('compile_pyc')
+        management.call_command('flush', interactive=False)
+        
     def _execute(self):
-        management.call_command('generaterealdata', 'facilities')
-        management.call_command('generaterealdata', 'facility_groups')
-        management.call_command('generaterealdata', 'facility_users')
+        management.call_command('generaterealdata')
+
+    def _teardown(self):
+        from main.models import ExerciseLog, VideoLog, UserLog
+        
+        
