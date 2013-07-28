@@ -45,12 +45,13 @@ class Common(object):
                 iterations = self.max_iterations
         
         self.return_dict['iterations'] = iterations
-        
         self.return_dict['individual_elapsed'] = {}
+        self.return_dict['post_execute_info'] = {}
         for i in range(iterations):
             start_time = time.time()
             self._execute()
             self.return_dict['individual_elapsed'][i+1] = time.time() - start_time
+            self.return_dict['post_execute_info'][i+1] = self._get_post_execute_info()
         
         sum = 0.0
         for i in self.return_dict['individual_elapsed']:
@@ -64,4 +65,4 @@ class Common(object):
     def _setup(self): pass
     def _execute(self): pass
     def _teardown(self): pass
-        
+    def _get_post_execute_info(self): pass    

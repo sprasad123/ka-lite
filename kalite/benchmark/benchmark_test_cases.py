@@ -19,8 +19,7 @@
     $ ./manage.py shell
     
     >>> import benchmark.benchmark_test_cases as btc
-    >>> mytest = btc.Hello_world(comment="some text", fixture="/foo/bar.json")
-    >>> print mytest.execute(iterations=2)
+    >>> btc.Hello_world(comment="text", fixture="/foo/bar.json").execute(iterations=2)
 
     IMPORTANT: the fixture argument does NOT install the fixture - this argument
      is only used to record the fixture name in the result dictionary
@@ -47,13 +46,17 @@ import random
 from django.core import management
 
 import kalite.utils.testing.benchmark_base as benchmark_base
-
+from main.models import ExerciseLog, VideoLog, UserLog
+from securesync.models import Facility, FacilityUser, FacilityGroup
 
 class Hello_world(benchmark_base.Common):
 
     def _setup(self):
         random.seed(time.time()) 
-        
+
+    def _get_post_execute_info(self):
+        return "Hello world has finished"
+                
     def _execute(self):
         time.sleep(10. * random.random())
         
@@ -66,19 +69,11 @@ class Validate_models(benchmark_base.Common):
 class Generate_real_data(benchmark_base.Common):
     """
     generaterealdata command is both i/o and moderately cpu intensive
-
+    The i/o in this task is primarily INSERT
     Note: if more excercises or videos are added, this benchmark will
     take longer!
-
-    expected record counts:
-    FacilityUser = 20
-    ExcerciseLog = 1185
-    VideoLog = 2082
-    UserLog = 0
-    
-    E5500 = {'comment': None, 'head': 'e578087 benchmark: initial commit', 'individual_elapsed': {1: 1183.6675910949707}, 'iterations': 1, 'fixture': None, 'average_elapsed': 1183.6675910949707, 'uname': ('Linux', 'xubuntu', '3.2.0-35-generic', '#55-Ubuntu SMP Wed Dec 5 17:42:16 UTC 2012', 'x86_64', 'x86_64'), 'branch': 'benchmark_v2', 'class': 'Generate_real_data'}
-
     """
+    
     def _setup(self):
         self.max_iterations = 1
         management.call_command('clean_pyc')
@@ -88,7 +83,70 @@ class Generate_real_data(benchmark_base.Common):
     def _execute(self):
         management.call_command('generaterealdata')
 
+    def _get_post_execute_info(self):
+        info = {}
+        info['ExerciseLog.objects.count'] = ExerciseLog.objects.count()
+        info['VideoLog.objects.count'] = VideoLog.objects.count()
+        info['UserLog.objects.count'] = UserLog.objects.count()
+        info['Facility.objects.count'] = Facility.objects.count()
+        info['FacilityUser.objects.count'] = FacilityUser.objects.count()
+        info['FacilityGroup.objects.count'] = FacilityGroup.objects.count()
+        return info
+        
     def _teardown(self):
         from main.models import ExerciseLog, VideoLog, UserLog
         
         
+class One_thousand_random_reads(benchmark_base.Common):
+    """
+    One thousand random accesses of the video and exercise logs (500 of each)
+    The IO in the test is primarily SELECT and will normally be cached in memory
+    """
+    
+    def _setup(self):
+        random.seed(24601)
+        management.call_command('clean_pyc')
+        management.call_command('compile_pyc')
+        #give the platform a chance to cache the logs
+        self.exercise_list = ExerciseLog.objects.get_query_set()
+        self.video_list = VideoLog.objects.get_query_set()
+        self.exercise_count = ExerciseLog.objects.count()
+        self.video_count = VideoLog.objects.count()
+           
+    def _execute(self):
+        for x in range(500):
+            VideoLog.objects.get(id=self.video_list[int(random.random()*self.video_count)].id)
+            ExerciseLog.objects.get(id=self.exercise_list[int(random.random()*self.exercise_count)].id)          
+
+    def _get_post_execute_info(self):
+        return {"total_records_accessed": 1000}
+
+
+        
+class One_hundred_random_log_updates(benchmark_base.Common):
+    """
+    One hundred random accesses and updates tothe video and exercise logs (50 of each)
+    The I/O here is SELECT and UPDATE - update will normally generate physical media access
+    """
+    
+    def _setup(self):
+        random.seed(24601)
+        management.call_command('clean_pyc')
+        management.call_command('compile_pyc')
+        #give the platform a chance to cache the logs
+        self.exercise_list = ExerciseLog.objects.get_query_set()
+        self.video_list = VideoLog.objects.get_query_set()
+        self.exercise_count = ExerciseLog.objects.count()
+        self.video_count = VideoLog.objects.count()        
+    def _execute(self):
+        for x in range(50):
+            this_video = VideoLog.objects.get(id=self.video_list[int(random.random()*self.video_count)].id)
+            #this_video.total_seconds_watched += 1
+            this_video.save()
+            this_exercise = ExerciseLog.objects.get(id=self.exercise_list[int(random.random()*self.exercise_count)].id)
+            #this_exercise.attempts += 1
+            this_exercise.save()
+            
+
+    def _get_post_execute_info(self):
+        return {"total_records_updated": 100}

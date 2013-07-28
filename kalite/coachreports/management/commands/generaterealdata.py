@@ -146,8 +146,7 @@ def generate_fake_facility_users(nusers=20, facilities=None, facility_groups=Non
     for facility in facilities:
         for facility_group in facility_groups:
             for i in range(0, users_per_group):
-                print i
-                while True: # check is random name is a duplicate, and try again 
+                while True: # if random name is a duplicate, try again 
                     user_data = {
                         "first_name": random.choice(firstnames),
                         "last_name":  random.choice(lastnames),
@@ -160,7 +159,7 @@ def generate_fake_facility_users(nusers=20, facilities=None, facility_groups=Non
                         facility_user.save()
                         logging.info("Retrieved facility user '%s/%s'" % (facility.name, user_data["username"]))
                     except FacilityUser.DoesNotExist as e:
-                        break # we can move on
+                        break # not a duplicate, we can move on
                     
                 notes = json.dumps(sample_user_settings())
 
