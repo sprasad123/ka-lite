@@ -1,8 +1,8 @@
 ## Benchmark tests and results
 
-## I/O performance benchmarks
+### I/O performance benchmarks
 
-### Generate real data
+#### Generate real data
 
 This benchmark empties the database and then runs generaterealdata.  This benchmark measures I/O insert performance, and, to a lesser extent computation power.
 
@@ -16,7 +16,7 @@ This benchmark empties the database and then runs generaterealdata.  This benchm
 >>> btc.Generate_real_data().execute()
 ```
 
-### One thousand random reads
+#### One thousand random reads
 
 Using the database created by *Generate real data*, tests data reading speed from the VideoLog and ExerciseLog models.
 
@@ -32,7 +32,7 @@ $./kalite/manage.py shell
 >>> btc.One_thousand_random_reads().execute()
 ```
 
-### One hundred random log updates
+#### One hundred random log updates
 
 Using the database created by *Generate real data*, this benchmark tests updating the VideoLog and ExerciseLog models.
 
