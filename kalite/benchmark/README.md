@@ -4,8 +4,8 @@
 
 Provides initial benchmarks for KA-Lite with a Raspberry Pi which is acting as a distributed(Local) server.
 
-Tests and Results are in [TEST_RESULTS.md](/TEST_RESULTS.md)  
-Raw data from testing is in [DETAILED_RESULTS.md](/DETAILED_RESULTS.md)
+Tests and Results are in [TEST_RESULTS.md](/kalite/benchmark/TEST_RESULTS.md)  
+Raw data from testing is in [DETAILED_RESULTS.md](/kalite/benchmark/DETAILED_RESULTS.md)
 
 **Hardware** 
 
