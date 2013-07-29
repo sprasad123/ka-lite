@@ -68,9 +68,9 @@ sudo shutdown -h now
 
 ```
 cd ~
-git clone https://github.com/learningequality/ka-lite.git
+git clone https://github.com/gimick/ka-lite.git
 cd ka-lite/
-git checkout develop
+git checkout benchmark_v2
 
 #Run the installer, remember to select autostart Y during the install process
 ./install.sh
