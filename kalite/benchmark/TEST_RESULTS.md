@@ -1,4 +1,4 @@
-## Benchmark test results
+## Benchmark tests and results
 
 ## I/O performance benchmarks
 
@@ -38,8 +38,8 @@ Using the database created by *Generate real data*, this benchmark tests updatin
 
 This benchmark principally measures UPDATE speed and will normally generate physical I/O
 
-* RaspberryPi benchmark result: 1.8 records per second
-* Intel E5500/Sata/3gb ram comparison: 2.9 records per second
+* RaspberryPi benchmark result: **1.8 records per second**
+* Intel E5500/Sata/3gb ram comparison: **2.9 records per second**
 
 ```
 $./stop.sh
