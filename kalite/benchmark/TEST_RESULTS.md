@@ -47,3 +47,18 @@ $./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
 >>> btc.One_hundred_random_log_updates().execute(iterations=5)
 ```
+
+#### One hundred random log updates commit success
+
+Same as above, but all one hundred updates are done in a sigle transaction
+and should be quicker 
+
+* RaspberryPi benchmark result: **1.8 records per second**
+* Intel E5500/Sata/3gb ram comparison: **6.3 records per second**
+
+```
+$./stop.sh
+$./kalite/manage.py shell
+>>> import benchmark.benchmark_test_cases as btc
+>>> btc.One_hundred_random_log_updates_commit_success().execute(iterations=5)
+```

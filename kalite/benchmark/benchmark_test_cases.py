@@ -44,6 +44,7 @@ import time
 import random
 
 from django.core import management
+from django.db import transaction
 
 import kalite.utils.testing.benchmark_base as benchmark_base
 from main.models import ExerciseLog, VideoLog, UserLog
@@ -137,16 +138,23 @@ class One_hundred_random_log_updates(benchmark_base.Common):
         self.exercise_list = ExerciseLog.objects.get_query_set()
         self.video_list = VideoLog.objects.get_query_set()
         self.exercise_count = ExerciseLog.objects.count()
-        self.video_count = VideoLog.objects.count()        
+        self.video_count = VideoLog.objects.count()
+             
     def _execute(self):
         for x in range(50):
             this_video = VideoLog.objects.get(id=self.video_list[int(random.random()*self.video_count)].id)
-            #this_video.total_seconds_watched += 1
             this_video.save()
             this_exercise = ExerciseLog.objects.get(id=self.exercise_list[int(random.random()*self.exercise_count)].id)
-            #this_exercise.attempts += 1
             this_exercise.save()
             
 
     def _get_post_execute_info(self):
         return {"total_records_updated": 100}
+
+class One_hundred_random_log_updates_commit_success(One_hundred_random_log_updates):
+    """
+    Same as above, but this time, only commit transactions at the end of the _execute phase.
+    """
+    @transaction.commit_on_success
+    def _execute(self):
+        super(One_hundred_random_log_updates_commit_success, self)._execute()
