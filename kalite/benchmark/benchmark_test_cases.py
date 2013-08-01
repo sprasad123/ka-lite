@@ -45,12 +45,16 @@ import random
 
 from django.core import management
 from django.db import transaction
+from selenium import webdriver
+
 
 import kalite.utils.testing.benchmark_base as benchmark_base
 from main.models import ExerciseLog, VideoLog, UserLog
 from securesync.models import Facility, FacilityUser, FacilityGroup
+from utils.testing.browser import BrowserTestCase
 
-class Hello_world(benchmark_base.Common):
+
+class HelloWorld(benchmark_base.Common):
 
     def _setup(self):
         random.seed(time.time()) 
@@ -67,7 +71,7 @@ class Validate_models(benchmark_base.Common):
         management.call_command('validate', verbosity=1)
         
 
-class Generate_real_data(benchmark_base.Common):
+class GenerateRealData(benchmark_base.Common):
     """
     generaterealdata command is both i/o and moderately cpu intensive
     The i/o in this task is primarily INSERT
@@ -98,7 +102,7 @@ class Generate_real_data(benchmark_base.Common):
         from main.models import ExerciseLog, VideoLog, UserLog
         
         
-class One_thousand_random_reads(benchmark_base.Common):
+class OneThousandRandomReads(benchmark_base.Common):
     """
     One thousand random accesses of the video and exercise logs (500 of each)
     The IO in the test is primarily SELECT and will normally be cached in memory
@@ -124,7 +128,7 @@ class One_thousand_random_reads(benchmark_base.Common):
 
 
         
-class One_hundred_random_log_updates(benchmark_base.Common):
+class OneHundredRandomLogUpdates(benchmark_base.Common):
     """
     One hundred random accesses and updates tothe video and exercise logs (50 of each)
     The I/O here is SELECT and UPDATE - update will normally generate physical media access
@@ -146,15 +150,33 @@ class One_hundred_random_log_updates(benchmark_base.Common):
             this_video.save()
             this_exercise = ExerciseLog.objects.get(id=self.exercise_list[int(random.random()*self.exercise_count)].id)
             this_exercise.save()
-            
 
     def _get_post_execute_info(self):
         return {"total_records_updated": 100}
 
-class One_hundred_random_log_updates_commit_success(One_hundred_random_log_updates):
+class OneHundredRandomLogUpdatesSingleTransaction(OneHundredRandomLogUpdates):
     """
     Same as above, but this time, only commit transactions at the end of the _execute phase.
     """
     @transaction.commit_on_success
     def _execute(self):
-        super(One_hundred_random_log_updates_commit_success, self)._execute()
+        super(OneHundredRandomLogUpdatesSingleTransaction, self)._execute()
+
+class LoadLanding(benchmark_base.Common):
+
+    def _setup(self):
+        self.browser = BrowserTestCase()
+        self.landing_url = "localhost:8008"
+        self.login = "localhost:8008/securesync/login/"
+        self.browser.get(self.landing_url)
+        self.browser.get(self.login)
+        
+
+    def _execute(self):
+        self.browser.get(self.landing_url)
+        self.browser.get(self.login)
+                
+
+    def _teardown(self):
+        self.browser.quit()
+        

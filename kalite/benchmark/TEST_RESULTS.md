@@ -13,7 +13,7 @@ This benchmark empties the database and then runs generaterealdata.  This benchm
 ./stop.sh
 ./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
->>> btc.Generate_real_data().execute()
+>>> btc.GenerateRealData().execute()
 ```
 
 #### One thousand random reads
@@ -29,7 +29,7 @@ This benchmark measures SELECT speed and will probably use cached reads if enoug
 $./stop.sh
 $./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
->>> btc.One_thousand_random_reads().execute()
+>>> btc.OneThousandRandomReads().execute()
 ```
 
 #### One hundred random log updates
@@ -45,7 +45,7 @@ This benchmark principally measures UPDATE speed and will normally generate phys
 $./stop.sh
 $./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
->>> btc.One_hundred_random_log_updates().execute(iterations=5)
+>>> btc.OneHundredRandomLogUpdates().execute(iterations=5)
 ```
 
 #### One hundred random log updates commit success
@@ -53,12 +53,12 @@ $./kalite/manage.py shell
 Same as above, but all one hundred updates are done in a sigle transaction
 and should be quicker 
 
-* RaspberryPi benchmark result: **1.8 records per second**
-* Intel E5500/Sata/3gb ram comparison: **6.3 records per second**
+* RaspberryPi benchmark result: **2.0 records per second**
+* Intel E5500/Sata/3gb ram comparison: **5.3 records per second**
 
 ```
 $./stop.sh
 $./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
->>> btc.One_hundred_random_log_updates_commit_success().execute(iterations=5)
+>>> btc.OneHundredRandomLogUpdatesSingleTransaction().execute(iterations=5)
 ```

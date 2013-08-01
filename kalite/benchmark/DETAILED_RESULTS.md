@@ -24,8 +24,8 @@ Returned dictionary strings will be recorded here.
 
 {'comment': None, 'post_execute_info': {1: {'total_records_updated': 100}, 2: {'total_records_updated': 100}, 3: {'total_records_updated': 100}, 4: {'total_records_updated': 100}, 5: {'total_records_updated': 100}}, 'head': 'ab622ef more i/o benchmarks + tweak base class.', 'individual_elapsed': {1: 33.15039777755737, 2: 36.549885988235474, 3: 34.0961799621582, 4: 36.21947693824768, 5: 34.84787893295288}, 'iterations': 5, 'fixture': None, 'average_elapsed': 34.97276391983032, 'uname': ('Linux', 'xubuntu', '3.2.0-35-generic', '#55-Ubuntu SMP Wed Dec 5 17:42:16 UTC 2012', 'x86_64', 'x86_64'), 'branch': 'benchmark_v2', 'class': 'One_hundred_random_log_updates'}
 
-#### One hundred random log updates commit success
+#### One hundred random log updates single transaction
 
-{}
+{'comment': None, 'post_execute_info': {1: {'total_records_updated': 100}, 2: {'total_records_updated': 100}, 3: {'total_records_updated': 100}, 4: {'total_records_updated': 100}, 5: {'total_records_updated': 100}}, 'head': '455046f new benchmark 100 updates in a single transaction', 'individual_elapsed': {1: 66.66215491294861, 2: 47.01352500915527, 3: 47.47680187225342, 4: 48.43577980995178, 5: 45.99620699882507}, 'iterations': 5, 'fixture': None, 'average_elapsed': 51.116893720626834, 'uname': ('Linux', 'pi4', '3.6.11+', '#474 PREEMPT Thu Jun 13 17:14:42 BST 2013', 'armv6l', ''), 'branch': 'benchmark_v2', 'class': 'One_hundred_random_log_updates_commit_success'}
 
 {'comment': None, 'post_execute_info': {1: {'total_records_updated': 100}, 2: {'total_records_updated': 100}, 3: {'total_records_updated': 100}}, 'head': 'ba04ed7 Update TEST_RESULTS.md', 'individual_elapsed': {1: 16.341366052627563, 2: 17.70698094367981, 3: 22.9561870098114}, 'iterations': 3, 'fixture': None, 'average_elapsed': 19.001511335372925, 'uname': ('Linux', 'xubuntu', '3.2.0-35-generic', '#55-Ubuntu SMP Wed Dec 5 17:42:16 UTC 2012', 'x86_64', 'x86_64'), 'branch': 'benchmark_v2', 'class': 'One_hundred_random_log_updates_commit_success'}
