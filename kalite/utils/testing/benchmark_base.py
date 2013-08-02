@@ -17,7 +17,7 @@ import subprocess
     
 class Common(object):
 
-    def __init__(self, comment=None, fixture=None):
+    def __init__(self, comment=None, fixture=None, **kwargs):
 
         self.return_dict = {}
         self.return_dict['comment'] = comment
@@ -34,7 +34,7 @@ class Common(object):
             self.return_dict['branch'] = None
             self.return_dict['head'] = None            
 
-        self._setup()
+        self._setup(**kwargs)
 
     def execute(self, iterations=1):
 

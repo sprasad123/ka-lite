@@ -49,6 +49,7 @@ from selenium.webdriver.support import expected_conditions, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 
 import kalite.utils.testing.benchmark_base as benchmark_base
 from main.models import ExerciseLog, VideoLog, UserLog
@@ -166,33 +167,42 @@ class OneHundredRandomLogUpdatesSingleTransaction(OneHundredRandomLogUpdates):
         super(OneHundredRandomLogUpdatesSingleTransaction, self)._execute()
 
 
-class LoginAdmin(benchmark_base.Common):
+class LoginLogout(benchmark_base.Common):
 
-    def _setup(self):
+    def _setup(self, url="http://localhost:8008", username="admin", password="admin"):
         self.browser = webdriver.Firefox()
-        self.landing_url = "localhost:8008"
-        self.browser.get(self.landing_url)
-        wait = ui.WebDriverWait(self.browser, 30)
-        wait.until(expected_conditions.title_contains(("Home")))         
+        self.url = url
+        self.username = username
+        self.password = password
+        self.browser.get(self.url)
+        self.wait = ui.WebDriverWait(self.browser, 30)
+        self.wait.until(expected_conditions.title_contains(("Home")))
+        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "nav_login")))      
 
     def _execute(self):
-        elem = self.browser.find_element_by_id("nav_login") # login button
+        elem = self.browser.find_element_by_id("nav_login")
         elem.send_keys(Keys.RETURN)
-        wait = ui.WebDriverWait(self.browser, 30)
-        wait.until(expected_conditions.title_contains(("Log in")))
         
+        self.wait.until(expected_conditions.title_contains(("Log in")))
+        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "id_username")))         
         elem = self.browser.find_element_by_id("id_username")
-        elem.send_keys("admin")
+        elem.send_keys(self.username)
         elem = self.browser.find_element_by_id("id_password")
-        elem.send_keys("admin" + Keys.RETURN)
-        wait = ui.WebDriverWait(self.browser, 30)
-        wait.until(expected_conditions.title_contains(("Administration Panel")))        
-
-        elem = self.browser.find_element_by_id("logout") # login button
+        elem.send_keys(self.password + Keys.RETURN)
+        
+        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "logout")))
+        elem = self.browser.find_element_by_id("logout")
         elem.send_keys(Keys.RETURN)
-        wait = ui.WebDriverWait(self.browser, 30)
-        wait.until(expected_conditions.title_contains(("Home")))
-                
+        
+        self.wait.until(expected_conditions.title_contains(("Home")))
+        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "nav_login")))
+        
+    def _get_post_execute_info(self):
+        info = {}
+        info["url"] = self.url
+        info["username"] = self.username
+        return info
+        
     def _teardown(self):
         self.browser.close()
         
