@@ -45,8 +45,10 @@ import random
 
 from django.core import management
 from django.db import transaction
+from selenium.webdriver.support import expected_conditions, ui 
 from selenium import webdriver
-
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.keys import Keys
 
 import kalite.utils.testing.benchmark_base as benchmark_base
 from main.models import ExerciseLog, VideoLog, UserLog
@@ -64,8 +66,9 @@ class HelloWorld(benchmark_base.Common):
                 
     def _execute(self):
         time.sleep(10. * random.random())
+
         
-class Validate_models(benchmark_base.Common):
+class ValidateModels(benchmark_base.Common):
 
     def _execute(self):
         management.call_command('validate', verbosity=1)
@@ -126,7 +129,6 @@ class OneThousandRandomReads(benchmark_base.Common):
     def _get_post_execute_info(self):
         return {"total_records_accessed": 1000}
 
-
         
 class OneHundredRandomLogUpdates(benchmark_base.Common):
     """
@@ -154,6 +156,7 @@ class OneHundredRandomLogUpdates(benchmark_base.Common):
     def _get_post_execute_info(self):
         return {"total_records_updated": 100}
 
+
 class OneHundredRandomLogUpdatesSingleTransaction(OneHundredRandomLogUpdates):
     """
     Same as above, but this time, only commit transactions at the end of the _execute phase.
@@ -162,21 +165,34 @@ class OneHundredRandomLogUpdatesSingleTransaction(OneHundredRandomLogUpdates):
     def _execute(self):
         super(OneHundredRandomLogUpdatesSingleTransaction, self)._execute()
 
-class LoadLanding(benchmark_base.Common):
+
+class LoginAdmin(benchmark_base.Common):
 
     def _setup(self):
-        self.browser = BrowserTestCase()
+        self.browser = webdriver.Firefox()
         self.landing_url = "localhost:8008"
-        self.login = "localhost:8008/securesync/login/"
         self.browser.get(self.landing_url)
-        self.browser.get(self.login)
-        
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Home")))         
 
     def _execute(self):
-        self.browser.get(self.landing_url)
-        self.browser.get(self.login)
-                
+        elem = self.browser.find_element_by_id("nav_login") # login button
+        elem.send_keys(Keys.RETURN)
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Log in")))
+        
+        elem = self.browser.find_element_by_id("id_username")
+        elem.send_keys("admin")
+        elem = self.browser.find_element_by_id("id_password")
+        elem.send_keys("admin" + Keys.RETURN)
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Administration Panel")))        
 
+        elem = self.browser.find_element_by_id("logout") # login button
+        elem.send_keys(Keys.RETURN)
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Home")))
+                
     def _teardown(self):
-        self.browser.quit()
+        self.browser.close()
         
