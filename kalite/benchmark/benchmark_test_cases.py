@@ -62,12 +62,11 @@ class HelloWorld(benchmark_base.Common):
     def _setup(self):
         random.seed(time.time()) 
 
-    def _get_post_execute_info(self):
-        return "Hello world has finished"
-                
     def _execute(self):
         time.sleep(10. * random.random())
 
+    def _get_post_execute_info(self):
+        return "Hello world has finished"
         
 class ValidateModels(benchmark_base.Common):
 
@@ -175,29 +174,38 @@ class LoginLogout(benchmark_base.Common):
         self.username = username
         self.password = password
         self.browser.get(self.url)
-        self.wait = ui.WebDriverWait(self.browser, 30)
-        self.wait.until(expected_conditions.title_contains(("Home")))
-        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "nav_login")))      
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Home")))
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
+        random.seed(24601)
+        time.sleep ((random.random()*20.0))  
 
     def _execute(self):
         elem = self.browser.find_element_by_id("nav_login")
         elem.send_keys(Keys.RETURN)
         
-        self.wait.until(expected_conditions.title_contains(("Log in")))
-        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "id_username")))         
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.title_contains(("Log in")))
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
         elem = self.browser.find_element_by_id("id_username")
         elem.send_keys(self.username)
         elem = self.browser.find_element_by_id("id_password")
         elem.send_keys(self.password + Keys.RETURN)
         
-        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "logout")))
+    def _get_post_execute_info(self):
+
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
         elem = self.browser.find_element_by_id("logout")
         elem.send_keys(Keys.RETURN)
+
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.title_contains(("Home")))
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
         
-        self.wait.until(expected_conditions.title_contains(("Home")))
-        self.wait.until(expected_conditions.visibility_of_element_located((By.ID, "nav_login")))
-        
-    def _get_post_execute_info(self):
         info = {}
         info["url"] = self.url
         info["username"] = self.username

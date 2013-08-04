@@ -1,21 +1,30 @@
 
 """
-
 Very temporary test harness
 
-USAGE:
-$ ./manage.py shell
+python ./kalite/benchmark/temporary_test_runner.py
 
-import benchmark.temporary_test_runner
-benchmark.temporary_test_runner.Run_me()
-
-and if you don't mind data being written permanently to your db, this one can be used
-# IMPORTANT THE ONE BELOW WILL PERMANENTLY ADD STUDENTS and FACILITIES TO YOUR DB !!!!
-# IMPORTANT THE ONE BELOW WILL PERMANENTLY ADD STUDENTS and FACILITIES TO YOUR DB !!!!
-
-benchmark.temporary_test_runner.Generate_data_in_live()
 """
+
+#!/usr/bin/env python2
+
+import os
+import sys
+
+# Set up the paths
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path = [script_dir + "/../../../ka-lite/kalite/../python-packages/"] + sys.path
+sys.path = [script_dir + "/../../../ka-lite/kalite/../"] + sys.path
+sys.path = [script_dir + "/../../../ka-lite/kalite"] + sys.path
+
+
+
+#import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'kalite.settings'
+
 import benchmark_test_cases
+import settings
+
 
 class Run_me(object):
     def __init__(self):
@@ -29,7 +38,7 @@ class Run_me(object):
         print "Hello world test (2 iterations)"
         print "-------------------------------"
 
-        bench = benchmark_test_cases.Hello_world(comment="Random sleeps")
+        bench = benchmark_test_cases.HelloWorld(comment="Random sleeps")
         result_dict = bench.execute(iterations=2)
         print result_dict
         print "Average elapsed (sec):", str(result_dict['average_elapsed'])
@@ -38,13 +47,14 @@ class Run_me(object):
         print "Validate models test (10 iterations)"
         print "------------------------------------"
 
-        bench = benchmark_test_cases.Validate_models(comment="Validation x 10")
+        bench = benchmark_test_cases.ValidateModels(comment="Validation x 10")
         result_dict = bench.execute(iterations=10)
 
         print "Average elapsed (sec):", str(result_dict['average_elapsed'])
 
         print "dictionary returned is:"
         print result_dict
+
 
 class Generate_data_in_live(object):
     def __init__(self):
@@ -58,3 +68,15 @@ class Generate_data_in_live(object):
         print "Elapsed (sec):", str(result_dict['average_elapsed'])
 
 
+class LoginLogout(object):
+    def __init__(self):
+        print "-----------------------"
+        print "Login logout sequence"
+        print "-----------------------"
+        bench = benchmark_test_cases.LoginLogout(comment="Test some real database access"
+                                                , url="http://192.168.1.24:8008"
+                                                , username="stevewall"
+                                                , password="student")
+        print bench.execute(iterations=10)
+
+LoginLogout()

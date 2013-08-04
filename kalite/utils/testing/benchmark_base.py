@@ -62,7 +62,7 @@ class Common(object):
 
         return self.return_dict
 
-    def _setup(self): pass
+    def _setup(self, **kwargs): pass
     def _execute(self): pass
     def _teardown(self): pass
     def _get_post_execute_info(self): pass    
