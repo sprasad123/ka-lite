@@ -61,4 +61,49 @@ $./stop.sh
 $./kalite/manage.py shell
 >>> import benchmark.benchmark_test_cases as btc
 >>> btc.OneHundredRandomLogUpdatesSingleTransaction().execute(iterations=5)
+
+
 ```
+
+#### Login Logout
+
+``` This benchmark tests the login performance of a raspberry pi.  The test measures time taken for
+a student to get from the landing page, through login and to get to the home page.
+
+The raspberry Pi is acting as distributed server; another desktop machine runs one script to test the timings.
+Several additional desktops run the same test continuously.  Each desktop can probably run 5 to 7 concurrent
+scripts, but the scripts will become unstable if too much load is applied.  The test is re-run multiple times,
+each time an additional script was started to progressively build up the load on the raspberry Pi server.
+
+**Configuration:** 
+Raspberry Pi distributed server with a student login created
+Raspberry Pi wired into wireless router
+3x desktops, wireless connected to router, and loaded with ka-lite (server NOT running on these machines)
+
+**Test:** 
+1x desktop begins by running the login/logout script.  This desktop will always run one instance of this script.
+
+```
+$ ./kalite/manage.py shell
+>>> import benchmark.benchmark_test_cases as btc
+>>> btc.LoginLogout(url="http://192.168.x.x:8008", username="foo", password="bar").execute(iterations=5)
+
+```
+
+On a separate desktop machine, startup a competing login (using the same script).  This time, set the iterations
+to say 1000 so the process runs continuously.  Note: the Selenium script may give a timeout to the console once 
+the desktop becomes stressed.  Just restart these failed processes.  It is important to monitor the competing 
+processes because the benchmark will not be valid if some of the competing load has timed-out.
+
+
+```
+$ ./kalite/manage.py shell
+>>> import benchmark.benchmark_test_cases as btc
+>>> btc.LoginLogout(url="http://192.168.x.x:8008", username="foo", password="bar").execute(iterations=1000)
+
+```
+
+Expect a typical desktop to support about 5-10 competing logins.
+
+
+
