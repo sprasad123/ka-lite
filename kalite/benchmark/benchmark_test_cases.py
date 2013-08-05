@@ -86,7 +86,7 @@ class GenerateRealData(benchmark_base.Common):
         self.max_iterations = 1
         management.call_command('clean_pyc')
         management.call_command('compile_pyc')
-        management.call_command('flush', interactive=False)
+        #management.call_command('flush', interactive=False)
         
     def _execute(self):
         management.call_command('generaterealdata')
