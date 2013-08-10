@@ -243,7 +243,6 @@ class SeleniumStudent(benchmark_base.Common):
         self.browser = webdriver.Firefox()
         self.host_url = url
         self.browser.get(self.host_url)
-        print self.browser.current_url
         wait = ui.WebDriverWait(self.browser, 30)
         wait.until(expected_conditions.title_contains(("Home")))
         wait = ui.WebDriverWait(self.browser, 30)
@@ -252,72 +251,71 @@ class SeleniumStudent(benchmark_base.Common):
 
         elem = self.browser.find_element_by_id("nav_login")
         elem.send_keys(Keys.RETURN)
-        
+        time.sleep(5+random.random()*60.) # stagger 
         wait = ui.WebDriverWait(self.browser, 60)
         wait.until(expected_conditions.title_contains(("Log in")))
         wait = ui.WebDriverWait(self.browser, 60)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
         elem = self.browser.find_element_by_id("id_username")
         elem.send_keys(username)
+        time.sleep(3)
         elem = self.browser.find_element_by_id("id_password")
-        elem.send_keys(password + Keys.RETURN)
-
+        elem.send_keys(password)
+        time.sleep(3)
+        elem.send_keys(Keys.RETURN)
+        time.sleep(5)
 
         #5 videos and associated exercises
         # based on 2 digit addition and subtraction
         self.activity = {}
         # label, min/max duration, method, args, next activity + threshold, activity))  always have a .99 to catch
         self.activity["begin"]= {
-                "method":self._pass, "duration": 1, "args":{},
-                "nextstep":[(.10, "begin"), (.97, "watch"), (.98, "exercise"), (.99, "end")]
+                "method":self._pass, "duration": 10, "args":{},
+                "nextstep":[(.10, "begin"), (.25, "watch"), (.98, "exercise"), (.99, "end")]
                  }
-        self.activity["w1"]= {
-                "method":"_watch_vid", "duration":60, "args":"url='/fhdskjh/asdkaaaaaafuh'",
-                "nextstep":[(.05, "begin"), (.40, "w1"), (.91, "neadd2_0"), (.99, "w2")]
-                 }
-
+                 
         self.activity["watch"]= {
                 "method":self._pass, "duration":1, "args":{},
                 "nextstep":[(.95, "w1"),(.99, "exercise")]
                  }
         self.activity["w1"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":2,
                 "args":{"path":"/math/"},
                 "nextstep":[(.99, "w2")]
                  }
         self.activity["w2"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":2,
                 "args":{"path":"/math/arithmetic/"},
                 "nextstep":[(.99, "w3")]
                 }
         self.activity["w3"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":2,
                 "args":{"path":"/math/arithmetic/addition-subtraction/"},
                 "nextstep":[(.99, "w4")]
                  }
         self.activity["w4"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":2,
                 "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/"},
                 "nextstep":[(.99, "w5")]
                  }
         self.activity["w5"]= {
                 "method":self._get_path, "duration":1,
                 "args":{"path":"/math/arithmetic/"},
-                "nextstep":[(.50, "wv1"), (.99, "wv2"), (.60, "wv1"), (.80, "wv1"), (.99, "wv1") ]
+                "nextstep":[(.20, "wv1"), (.40, "wv2"), (.60, "wv3"), (.80, "wv4"), (.99, "wv5")]
             }
             
         self.activity["wv1"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":3,
                 "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/v/addition-2/"},
                 "nextstep":[(.99, "wv1_1")]
                  }
         self.activity["wv1_1"]= {
                 "method":self._do_vid, "duration":750, "args":{},
-                "nextstep":[(.10, "wv1_1"), (.70, "wv2"), (.99, "begin")]
+                "nextstep":[(.10, "wv1_1"), (.20, "wv2"), (.99, "begin")]
                  }
                  
         self.activity["wv2"]= {
-                "method":self._get_path, "duration":1,
+                "method":self._get_path, "duration":3,
                 "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/v/adding-whole-numbers-and-applications-1/"},
                 "nextstep":[(.99, "wv2_1")]
                  }
@@ -325,42 +323,72 @@ class SeleniumStudent(benchmark_base.Common):
                 "method":self._do_vid, "duration":95, "args":{},
                 "nextstep":[(.10, "wv2_1"), (.70, "eadd2"), (.99, "begin")]
                  }
-                 
+
+        self.activity["wv3"]= {
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/v/subtraction-2/"},
+                "nextstep":[(.99, "wv3_1")]
+                 }
+        self.activity["wv3_1"]= {
+                "method":self._do_vid, "duration":760, "args":{},
+                "nextstep":[(.10, "wv3_1"), (.30, "wv4"), (.90, "esub2"), (.99, "begin")]
+                 }
+
+        self.activity["wv4"]= {
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/v/subtracting-whole-numbers/"},
+                "nextstep":[(.99, "wv4_1")]
+                 }
+        self.activity["wv4_1"]= {
+                "method":self._do_vid, "duration":175, "args":{},
+                "nextstep":[(.10, "wv4_1"), (.30, "wv5"), (.90, "esub2"), (.99, "begin")]
+                 }
+
+        self.activity["wv5"]= {
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/v/level-2-addition/"},
+                "nextstep":[(.99, "wv5_1")]
+                 }
+        self.activity["wv5_1"]= {
+                "method":self._do_vid, "duration":580, "args":{},
+                "nextstep":[(.10, "wv5_1"), (.70, "eadd2"), (.80, "begin")]
+                 }
+
         self.activity["exercise"]= {
                 "method":self._pass, "duration":1, "args":{},
                 "nextstep":[(.60, "eadd2"),(.99, "esub2")]
                  }                 
         self.activity["eadd2"]= {
-                "method":self._click, "duration":1, "args":{"find_by":By.ID, "find_text":"nav_practice"},
+                "method":self._click, "duration":3, "args":{"find_by":By.ID, "find_text":"nav_practice"},
                 "nextstep":[(.99, "neadd2_1")]
                  }
         self.activity["neadd2_1"]= {
-                "method":self._get_path, "duration":1, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
+                "method":self._get_path, "duration":3, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
                 "nextstep":[(.99, "neadd2_2")]
                  }
         self.activity["neadd2_2"]= {
-                "method":self._get_path, "duration":1, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/addition_2/"},
+                "method":self._get_path, "duration":3, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/addition_2/"},
                 "nextstep":[(.99, "do_eadd2")]
                  }
         self.activity["do_eadd2"]= {
-                "method":self._do_exer, "duration":3, "args":{},
+                "method":self._do_exer, "duration":5, "args":{},
                 "nextstep":[(.03, "begin"), (.75, "do_eadd2"), (.99, "esub2")]
                  }
                         
         self.activity["esub2"]= {
-                "method":self._click, "duration":1, "args":{"find_by":By.ID, "find_text":"nav_practice"},
+                "method":self._click, "duration":2, "args":{"find_by":By.ID, "find_text":"nav_practice"},
                 "nextstep":[(.99, "nesub2_1")]
                  }
         self.activity["nesub2_1"]= {
-                "method":self._get_path, "duration":1, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
+                "method":self._get_path, "duration":3, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
                 "nextstep":[(.99, "nesub2_2")]
                  }
         self.activity["nesub2_2"]= {
-                "method":self._get_path, "duration":1, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/subtraction_2/"},
+                "method":self._get_path, "duration":2, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/subtraction_2/"},
                 "nextstep":[(.99, "do_esub2")]
                  }
         self.activity["do_esub2"]= {
-                "method":self._do_exer, "duration":3, "args":{},
+                "method":self._do_exer, "duration":5, "args":{},
                 "nextstep":[(.03, "begin"), (.75, "do_esub2"), (.91, "watch"), (.99, "eadd2")]
                  }
                  
@@ -372,8 +400,6 @@ class SeleniumStudent(benchmark_base.Common):
     def _execute(self):
         current_activity = "begin"
         while (self.endtime >= time.time() and current_activity != "end"):
-            print self.activity[current_activity]["method"]
-            print (self.activity[current_activity]["args"])
             result=self.activity[current_activity]["method"](self.activity[current_activity]["args"])
             if "duration" in self.activity[current_activity]:
                 time.sleep(self.activity[current_activity]["duration"])
@@ -381,7 +407,7 @@ class SeleniumStudent(benchmark_base.Common):
             next_activity_random = round(random.random(),2)
             for threshold, next_activity in self.activity[current_activity]["nextstep"]:
                 if threshold >= next_activity_random:
-                    print next_activity_random, "next_activity =", next_activity
+                    #print next_activity_random, "next_activity =", next_activity
                     current_activity = next_activity
                     break
 

@@ -10,6 +10,7 @@ python ./kalite/benchmark/temporary_test_runner.py
 
 import os
 import sys
+import random
 
 # Set up the paths
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -73,7 +74,7 @@ class LoginLogout(object):
         print "-----------------------"
         print "Login logout sequence"
         print "-----------------------"
-        bench = benchmark_test_cases.LoginLogout(comment="Test some real database access"
+        bench = benchmark_test_cases.LoginLogout(comment="test some real database access"
                                                 , url="http://192.168.1.24:8008"
                                                 , username="stevewall"
                                                 , password="student")
@@ -87,6 +88,9 @@ class SeleniumStudent(object):
         bench = benchmark_test_cases.SeleniumStudent(comment="Test some real database access"
                                                 , username="stevewall"
                                                 , password="student"
-                                                ,behaviour_profile=8)
+                                                , url="http://192.168.1.24:8008"
+                                                , starttime="12:02"
+                                                , duration=15
+                                                ,behaviour_profile=(random.random()*200))
         print bench.execute()
 SeleniumStudent()
