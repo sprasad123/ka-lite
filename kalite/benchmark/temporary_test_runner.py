@@ -79,4 +79,14 @@ class LoginLogout(object):
                                                 , password="student")
         print bench.execute(iterations=10)
 
-LoginLogout()
+class SeleniumStudent(object):
+    def __init__(self):
+        print "-----------------------"
+        print "SeleniumStudent sequence"
+        print "-----------------------"
+        bench = benchmark_test_cases.SeleniumStudent(comment="Test some real database access"
+                                                , username="stevewall"
+                                                , password="student"
+                                                ,behaviour_profile=8)
+        print bench.execute()
+SeleniumStudent()

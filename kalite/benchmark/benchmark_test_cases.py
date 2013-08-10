@@ -41,6 +41,7 @@
 
  """
 import time
+import datetime
 import random
 
 from django.core import management
@@ -213,4 +214,142 @@ class LoginLogout(benchmark_base.Common):
         
     def _teardown(self):
         self.browser.close()
+
+class SeleniumStudent(benchmark_base.Common):
+    
+    """student username/password will be passed in
+        behaviour of this student will be determined by
+        seed value - seeds will typically be between 1 and 40 representing
+        each student in the class, but actually it is not important
+        starttime is the django (Chicago) time!!!!  Using start time allows us to cue-up a bunch of students
+         and then release them into the wild.
+        behaviour profile is a seed to decide how the student will work in class.  Students with the same
+         profile will follow the same behaviour.
         
+    """ 
+    def _setup(self, url="http://localhost:8008", username="stevewall",
+                password="student", starttime="00:00", duration=30, behaviour_profile=15):
+
+        def wait_until_starttime(starttime):
+            time.sleep((random.random() * 5.0) + 0) #random 20/25 second delay between checks
+            now = datetime.datetime.today()
+            if now.hour >= int(starttime[:2]):
+                if now.minute >= int(starttime[-2:]):
+                    return False
+            return True
+
+        while wait_until_starttime(starttime): pass #syncronise class starting 
+        self.endtime = time.time() + (duration * 60.)
+        self.browser = webdriver.Firefox()
+        self.host_url = url
+        self.browser.get(self.host_url)
+        print self.browser.current_url
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.title_contains(("Home")))
+        wait = ui.WebDriverWait(self.browser, 30)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
+        random.seed(24601 + behaviour_profile) # seed the seed
+
+        elem = self.browser.find_element_by_id("nav_login")
+        elem.send_keys(Keys.RETURN)
+        
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.title_contains(("Log in")))
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
+        elem = self.browser.find_element_by_id("id_username")
+        elem.send_keys(username)
+        elem = self.browser.find_element_by_id("id_password")
+        elem.send_keys(password + Keys.RETURN)
+
+
+        #5 videos and associated exercises
+        # based on 2 digit addition and subtraction
+        self.activity = {}
+        # label, min/max duration, method, args, next activity + threshold, activity))  always have a .99 to catch
+        self.activity["begin"]= {
+                "method":self._pass, "duration": 1, "args":{},
+                "nextstep":[(.10, "begin"), (.40, "w1"), (.91, "neadd2_0"), (.99, "w2")]
+                 }
+        self.activity["w1"]= {
+                "method":"_watch_vid", "duration":60, "args":"url='/fhdskjh/asdkaaaaaafuh'",
+                "nextstep":[(.05, "begin"), (.40, "w1"), (.91, "neadd2_0"), (.99, "w2")]
+                 }
+        self.activity["neadd2_0"]= {
+                "method":self._click, "duration":1, "args":{"find_by":By.ID, "find_text":"nav_practice"},
+                "nextstep":[(.99, "neadd2_1")]
+                 }
+        self.activity["neadd2_1"]= {
+                "method":self._get_path, "duration":1, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
+                "nextstep":[(.99, "neadd2_2")]
+                 }
+        self.activity["neadd2_2"]= {
+                "method":self._get_path, "duration":1, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/addition_2/"},
+                "nextstep":[(.99, "eadd2")]
+                 }
+        self.activity["eadd2"]= {
+                "method":self._do_exer, "duration":3, "args":{},
+                "nextstep":[(.03, "begin"), (.80, "eadd2"), (.99, "eadd3")]
+                 }                 
+        
+        self.activity["w2"]= {
+                "method":"_watch_vid", "duration":60, "args":"url='/fhdskjh/asddddddkfuh'",
+                "nextstep":[(.05, "begin"), (.80, "e1"), (.99, "w2")]
+                 }
+        
+    def _execute(self):
+        current_activity = "begin"
+        while self.endtime >= time.time() or current_activity != "end":
+            result=self.activity[current_activity]["method"](self.activity[current_activity]["args"])
+            if "duration" in self.activity[current_activity]:
+                time.sleep(self.activity[current_activity]["duration"])
+            
+            next_activity_random = round(random.random(),2)
+            for threshold, next_activity in self.activity[current_activity]["nextstep"]:
+                if threshold >= next_activity_random:
+                    current_activity = next_activity
+                    break
+
+    def _pass(self, args):
+        pass
+
+    def _click(self, args):
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((args["find_by"], args["find_text"])))
+        if args["find_by"] == By.ID:
+            elem = self.browser.find_element_by_id(args["find_text"])
+        elif args["find_by"] == By.PARTIAL_LINK_TEXT:
+            elem = self.browser.find_element_by_partial_link_text(args["find_text"])
+        elem.send_keys(Keys.RETURN)
+
+    def _do_exer(self, args):
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, '#solutionarea input[type=text]'))) 
+        elem = self.browser.find_element_by_css_selector('#solutionarea input[type=text]')
+        elem.click()
+        elem.send_keys("12345") 
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "check-answer-button")))         
+        elem = self.browser.find_element_by_id("check-answer-button")
+        elem.send_keys(Keys.RETURN)
+        time.sleep(4.5) # thinking time
+
+    def _get_path(self, args):
+        self.browser.get(self.host_url + args["path"])
+
+    def _get_post_execute_info(self):
+        #we are done! class over, lets get out of here
+        time.sleep(20. + (random.random() * 20.)) #wait 20/40 before logging out
+        #10% students will shut browser and forget to logout
+        if random.random() < 0.1:
+            return True
+
+        wait = ui.WebDriverWait(self.browser, 60)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
+        elem = self.browser.find_element_by_id("logout")
+        elem.send_keys(Keys.RETURN)
+
+    def _teardown(self):
+        self.browser.close()
+
+    
