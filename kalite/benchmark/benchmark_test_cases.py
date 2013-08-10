@@ -215,6 +215,7 @@ class LoginLogout(benchmark_base.Common):
     def _teardown(self):
         self.browser.close()
 
+
 class SeleniumStudent(benchmark_base.Common):
     
     """student username/password will be passed in
@@ -223,22 +224,22 @@ class SeleniumStudent(benchmark_base.Common):
         each student in the class, but actually it is not important
         starttime is the django (Chicago) time!!!!  Using start time allows us to cue-up a bunch of students
          and then release them into the wild.
-        behaviour profile is a seed to decide how the student will work in class.  Students with the same
-         profile will follow the same behaviour.
+        behaviour profile is a seed to decide which activities the student will carry out.
+          Students with the same profile will follow the same behaviour.
         
     """ 
     def _setup(self, url="http://localhost:8008", username="stevewall",
                 password="student", starttime="00:00", duration=30, behaviour_profile=15):
 
         def wait_until_starttime(starttime):
-            time.sleep((random.random() * 5.0) + 0) #random 20/25 second delay between checks
+            time.sleep((random.random() * 10.0) + 10) #sleep 
             now = datetime.datetime.today()
             if now.hour >= int(starttime[:2]):
                 if now.minute >= int(starttime[-2:]):
                     return False
             return True
-
-        while wait_until_starttime(starttime): pass #syncronise class starting 
+        while wait_until_starttime(starttime): pass #wait until lesson starttime
+        
         self.endtime = time.time() + (duration * 60.)
         self.browser = webdriver.Firefox()
         self.host_url = url
@@ -265,17 +266,31 @@ class SeleniumStudent(benchmark_base.Common):
         elem.send_keys(Keys.RETURN)
         time.sleep(5)
 
-        #5 videos and associated exercises
-        # based on 2 digit addition and subtraction
+        # self.activity simulates the classroom activity for the student
+        # All students begin with activity "begin".
+        # A random 2dp number < 1.0 is then generated, and the next step is decided, working
+        #  left to right through the list.
+        # This allows a pseudo-random system usage - the behaviour_profile seeds the random
+        #  number generator, so identical behaviour profiles will follow the same route through
+        #  the self.activity sequence.
+        #
+        # we are hard-coded here for the following videos, so they need to be downloaded before beginning:
+        #  o Introduction to carrying when adding
+        #  o Example: Adding two digit numbers (no carrying)
+        #  o Subtraction 2
+        #  o Example: 2-digit subtraction (no borrowing)
+        #  o Level 2 Addition
+    
         self.activity = {}
-        # label, min/max duration, method, args, next activity + threshold, activity))  always have a .99 to catch
         self.activity["begin"]= {
-                "method":self._pass, "duration": 10, "args":{},
+                "method":self._pass, "duration": 10,
+                "args":{},
                 "nextstep":[(.10, "begin"), (.25, "watch"), (.98, "exercise"), (.99, "end")]
                  }
                  
         self.activity["watch"]= {
-                "method":self._pass, "duration":1, "args":{},
+                "method":self._pass, "duration":1,
+                "args":{},
                 "nextstep":[(.95, "w1"),(.99, "exercise")]
                  }
         self.activity["w1"]= {
@@ -310,7 +325,8 @@ class SeleniumStudent(benchmark_base.Common):
                 "nextstep":[(.99, "wv1_1")]
                  }
         self.activity["wv1_1"]= {
-                "method":self._do_vid, "duration":750, "args":{},
+                "method":self._do_vid, "duration":750,
+                "args":{},
                 "nextstep":[(.10, "wv1_1"), (.20, "wv2"), (.99, "begin")]
                  }
                  
@@ -320,7 +336,8 @@ class SeleniumStudent(benchmark_base.Common):
                 "nextstep":[(.99, "wv2_1")]
                  }
         self.activity["wv2_1"]= {
-                "method":self._do_vid, "duration":95, "args":{},
+                "method":self._do_vid, "duration":95,
+                "args":{},
                 "nextstep":[(.10, "wv2_1"), (.70, "eadd2"), (.99, "begin")]
                  }
 
@@ -330,7 +347,8 @@ class SeleniumStudent(benchmark_base.Common):
                 "nextstep":[(.99, "wv3_1")]
                  }
         self.activity["wv3_1"]= {
-                "method":self._do_vid, "duration":760, "args":{},
+                "method":self._do_vid, "duration":760,
+                "args":{},
                 "nextstep":[(.10, "wv3_1"), (.30, "wv4"), (.90, "esub2"), (.99, "begin")]
                  }
 
@@ -340,7 +358,8 @@ class SeleniumStudent(benchmark_base.Common):
                 "nextstep":[(.99, "wv4_1")]
                  }
         self.activity["wv4_1"]= {
-                "method":self._do_vid, "duration":175, "args":{},
+                "method":self._do_vid, "duration":175,
+                "args":{},
                 "nextstep":[(.10, "wv4_1"), (.30, "wv5"), (.90, "esub2"), (.99, "begin")]
                  }
 
@@ -350,50 +369,61 @@ class SeleniumStudent(benchmark_base.Common):
                 "nextstep":[(.99, "wv5_1")]
                  }
         self.activity["wv5_1"]= {
-                "method":self._do_vid, "duration":580, "args":{},
+                "method":self._do_vid, "duration":580,
+                "args":{},
                 "nextstep":[(.10, "wv5_1"), (.70, "eadd2"), (.80, "begin")]
                  }
 
         self.activity["exercise"]= {
-                "method":self._pass, "duration":1, "args":{},
+                "method":self._pass, "duration":1,
+                "args":{},
                 "nextstep":[(.60, "eadd2"),(.99, "esub2")]
                  }                 
         self.activity["eadd2"]= {
-                "method":self._click, "duration":3, "args":{"find_by":By.ID, "find_text":"nav_practice"},
+                "method":self._click, "duration":3,
+                "args":{"find_by":By.ID, "find_text":"nav_practice"},
                 "nextstep":[(.99, "neadd2_1")]
                  }
         self.activity["neadd2_1"]= {
-                "method":self._get_path, "duration":3, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
                 "nextstep":[(.99, "neadd2_2")]
                  }
         self.activity["neadd2_2"]= {
-                "method":self._get_path, "duration":3, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/addition_2/"},
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/addition_2/"},
                 "nextstep":[(.99, "do_eadd2")]
                  }
         self.activity["do_eadd2"]= {
-                "method":self._do_exer, "duration":5, "args":{},
+                "method":self._do_exer, "duration":5,
+                "args":{},
                 "nextstep":[(.03, "begin"), (.75, "do_eadd2"), (.99, "esub2")]
                  }
                         
         self.activity["esub2"]= {
-                "method":self._click, "duration":2, "args":{"find_by":By.ID, "find_text":"nav_practice"},
+                "method":self._click, "duration":2,
+                "args":{"find_by":By.ID, "find_text":"nav_practice"},
                 "nextstep":[(.99, "nesub2_1")]
                  }
         self.activity["nesub2_1"]= {
-                "method":self._get_path, "duration":3, "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
+                "method":self._get_path, "duration":3,
+                "args":{"path":"/exercisedashboard/?topic=addition-subtraction"},
                 "nextstep":[(.99, "nesub2_2")]
                  }
         self.activity["nesub2_2"]= {
-                "method":self._get_path, "duration":2, "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/subtraction_2/"},
+                "method":self._get_path, "duration":2,
+                "args":{"path":"/math/arithmetic/addition-subtraction/two_dig_add_sub/e/subtraction_2/"},
                 "nextstep":[(.99, "do_esub2")]
                  }
         self.activity["do_esub2"]= {
-                "method":self._do_exer, "duration":5, "args":{},
+                "method":self._do_exer, "duration":5,
+                "args":{},
                 "nextstep":[(.03, "begin"), (.75, "do_esub2"), (.91, "watch"), (.99, "eadd2")]
                  }
                  
         self.activity["end"] = {
-                "method":self._click, "duration":1, "args":{"find_by":By.ID, "find_text":"logout"},
+                "method":self._click, "duration":1,
+                "args":{"find_by":By.ID, "find_text":"logout"},
                 "nextstep":[(.99, "end")]
                  }
                        
@@ -404,7 +434,7 @@ class SeleniumStudent(benchmark_base.Common):
             if "duration" in self.activity[current_activity]:
                 time.sleep(self.activity[current_activity]["duration"])
             
-            next_activity_random = round(random.random(),2)
+            next_activity_random = round(random.random(),2) 
             for threshold, next_activity in self.activity[current_activity]["nextstep"]:
                 if threshold >= next_activity_random:
                     #print next_activity_random, "next_activity =", next_activity
@@ -428,26 +458,24 @@ class SeleniumStudent(benchmark_base.Common):
         wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, '#solutionarea input[type=text]'))) 
         elem = self.browser.find_element_by_css_selector('#solutionarea input[type=text]')
         elem.click()
-        elem.send_keys("12345") 
+        elem.send_keys("12345") # a wrong answer, but we don't care
         wait = ui.WebDriverWait(self.browser, 60)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "check-answer-button")))         
         elem = self.browser.find_element_by_id("check-answer-button")
         elem.send_keys(Keys.RETURN)
-        time.sleep(4.5) # thinking time
+        time.sleep(4.5)
 
     def _do_vid(self, args):
         wait = ui.WebDriverWait(self.browser, 60)
         wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, "div#video-element.video-js div.vjs-big-play-button"))) 
         elem = self.browser.find_element_by_css_selector("div#video-element.video-js div.vjs-big-play-button")
         elem.click()
-        time.sleep(4.5) # thinking time
         
     def _get_path(self, args):
         self.browser.get(self.host_url + args["path"])
 
     def _get_post_execute_info(self):
         #we are done! class over, lets get out of here
-        time.sleep(20. + (random.random() * 20.)) #wait 20/40 before logging out
         #10% students will shut browser and forget to logout
         if random.random() < 0.1:
             return True
@@ -460,4 +488,3 @@ class SeleniumStudent(benchmark_base.Common):
     def _teardown(self):
         self.browser.close()
 
-    
