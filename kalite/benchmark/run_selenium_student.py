@@ -35,7 +35,7 @@ class SeleniumStudent(object):
                                                 , password="student"
                                                 , url="http://192.168.1.24:8008"
                                                 , starttime="00:00"
-                                                , duration=15
+                                                , duration=2
                                                 , behaviour_profile=(random.random()*200))
         print bench.execute()
 

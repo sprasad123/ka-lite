@@ -186,9 +186,9 @@ class LoginLogout(benchmark_base.Common):
         elem = self.browser.find_element_by_id("nav_login")
         elem.send_keys(Keys.RETURN)
         
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.title_contains(("Log in")))
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
         elem = self.browser.find_element_by_id("id_username")
         elem.send_keys(self.username)
@@ -197,14 +197,14 @@ class LoginLogout(benchmark_base.Common):
         
     def _get_post_execute_info(self):
 
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
         elem = self.browser.find_element_by_id("logout")
         elem.send_keys(Keys.RETURN)
 
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.title_contains(("Home")))
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
         
         info = {}
@@ -239,32 +239,26 @@ class SeleniumStudent(benchmark_base.Common):
                     return False
             return True
         while wait_until_starttime(starttime): pass #wait until lesson starttime
-        
+
+        self.behaviour_profile = behaviour_profile
+        self.return_list = []
         self.endtime = time.time() + (duration * 60.)
+        self.timeout = 240
         self.browser = webdriver.Firefox()
         self.host_url = url
         self.browser.get(self.host_url)
-        wait = ui.WebDriverWait(self.browser, 30)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.title_contains(("Home")))
-        wait = ui.WebDriverWait(self.browser, 30)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
-        random.seed(24601 + behaviour_profile) # seed the seed
+        random.seed(24601 + self.behaviour_profile) # seed the seed
 
         elem = self.browser.find_element_by_id("nav_login")
         elem.send_keys(Keys.RETURN)
-        time.sleep(5+random.random()*60.) # stagger 
-        wait = ui.WebDriverWait(self.browser, 60)
+        time.sleep(5+random.random()*6.) # stagger 
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.title_contains(("Log in")))
-        wait = ui.WebDriverWait(self.browser, 60)
-        wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
-        elem = self.browser.find_element_by_id("id_username")
-        elem.send_keys(username)
-        time.sleep(3)
-        elem = self.browser.find_element_by_id("id_password")
-        elem.send_keys(password)
-        time.sleep(3)
-        elem.send_keys(Keys.RETURN)
-        time.sleep(5)
+
 
         # self.activity simulates the classroom activity for the student
         # All students begin with activity "begin".
@@ -282,6 +276,12 @@ class SeleniumStudent(benchmark_base.Common):
         #  o Level 2 Addition
     
         self.activity = {}
+        
+        self.activity["login"]= {
+                "method":self._do_login, "duration": 4,
+                "args":{"username":username, "password": password},
+                "nextstep":[(.99, "begin")]
+                 }        
         self.activity["begin"]= {
                 "method":self._pass, "duration": 10,
                 "args":{},
@@ -422,17 +422,28 @@ class SeleniumStudent(benchmark_base.Common):
                  }
                  
         self.activity["end"] = {
-                "method":self._click, "duration":1,
-                "args":{"find_by":By.ID, "find_text":"logout"},
+                "method":self._do_logout, "duration":1,
+                "args":{},
                 "nextstep":[(.99, "end")]
                  }
                        
     def _execute(self):
-        current_activity = "begin"
-        while (self.endtime >= time.time() and current_activity != "end"):
+        current_activity = "login"
+        while True:
+            if time.time() >= self.endtime:
+                current_activity = "end"
+            start_clock_time = datetime.datetime.today()
+            start_time = time.time()
             result=self.activity[current_activity]["method"](self.activity[current_activity]["args"])
+            self.return_list.append((
+                    current_activity,
+                    (str(start_clock_time.hour) + str(start_clock_time.minute) + str(start_clock_time.second)), 
+                    round((time.time() - start_time),3),
+                                    ))
             if "duration" in self.activity[current_activity]:
                 time.sleep(self.activity[current_activity]["duration"])
+            if current_activity == "end":
+                break
             
             next_activity_random = round(random.random(),2) 
             for threshold, next_activity in self.activity[current_activity]["nextstep"]:
@@ -440,12 +451,12 @@ class SeleniumStudent(benchmark_base.Common):
                     #print next_activity_random, "next_activity =", next_activity
                     current_activity = next_activity
                     break
-
+        
     def _pass(self, args):
         pass
 
     def _click(self, args):
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((args["find_by"], args["find_text"])))
         if args["find_by"] == By.ID:
             elem = self.browser.find_element_by_id(args["find_text"])
@@ -454,37 +465,52 @@ class SeleniumStudent(benchmark_base.Common):
         elem.send_keys(Keys.RETURN)
 
     def _do_exer(self, args):
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, '#solutionarea input[type=text]'))) 
         elem = self.browser.find_element_by_css_selector('#solutionarea input[type=text]')
         elem.click()
         elem.send_keys("12345") # a wrong answer, but we don't care
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.ID, "check-answer-button")))         
         elem = self.browser.find_element_by_id("check-answer-button")
         elem.send_keys(Keys.RETURN)
-        time.sleep(4.5)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, '#solutionarea input[type=text]'))) 
 
     def _do_vid(self, args):
-        wait = ui.WebDriverWait(self.browser, 60)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
         wait.until(expected_conditions.element_to_be_clickable((By.CSS_SELECTOR, "div#video-element.video-js div.vjs-big-play-button"))) 
         elem = self.browser.find_element_by_css_selector("div#video-element.video-js div.vjs-big-play-button")
         elem.click()
+
+    def _do_login(self, args):
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.title_contains(("Log in")))
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "id_username")))         
+        elem = self.browser.find_element_by_id("id_username")
+        elem.send_keys(args["username"])
+        elem = self.browser.find_element_by_id("id_password")
+        elem.send_keys(args["password"])
+        elem.send_keys(Keys.RETURN)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
         
+    def _do_logout(self, args):
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
+        elem = self.browser.find_element_by_id("logout")
+        elem.send_keys(Keys.RETURN)
+        wait = ui.WebDriverWait(self.browser, self.timeout)
+        wait.until(expected_conditions.element_to_be_clickable((By.ID, "nav_login")))
+                        
     def _get_path(self, args):
         self.browser.get(self.host_url + args["path"])
 
     def _get_post_execute_info(self):
         #we are done! class over, lets get out of here
-        #10% students will shut browser and forget to logout
-        if random.random() < 0.1:
-            return True
-
-        wait = ui.WebDriverWait(self.browser, 60)
-        wait.until(expected_conditions.element_to_be_clickable((By.ID, "logout")))
-        elem = self.browser.find_element_by_id("logout")
-        elem.send_keys(Keys.RETURN)
-
+        return {"timings":self.return_list, "behaviour_profile":self.behaviour_profile}
+        
     def _teardown(self):
         self.browser.close()
 
